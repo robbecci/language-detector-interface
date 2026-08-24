@@ -1,0 +1,14 @@
+# Ambiente virtuale
+.venv/
+
+# Configurazioni PyCharm
+.idea/
+
+# File dati grezzi (troppo pesanti, rigenerabili con lo script)
+data/sentences.csv
+data/sentences_detailed.csv
+data/*.tar.bz2
+
+# File Python compilati
+__pycache__/
+*.pyc

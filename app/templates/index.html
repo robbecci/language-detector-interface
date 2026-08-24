@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>🌍 Rilevatore di Lingua</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Rilevatore di Lingua</h1>
+        <p class="subtitle">Scrivi un testo e scopri in quale lingua è</p>
+
+        <textarea id="text-input" placeholder="Inizia a scrivere qui..."></textarea>
+
+        <div id="result"></div>
+        <div id="warning"></div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById("text-input");
+        const resultDiv = document.getElementById("result");
+        const warningDiv = document.getElementById("warning");
+
+        const FLAG_CODES = {
+            "ita": "it",
+            "deu": "de",
+            "eng": "gb",
+            "fra": "fr",
+            "spa": "es"
+        };
+
+        let debounceTimer;
+
+        textInput.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(sendText, 400);
+        });
+
+        function sendText() {
+            const text = textInput.value;
+
+            if (text.trim() === "") {
+                resultDiv.textContent = "";
+                warningDiv.textContent = "";
+                return;
+            }
+
+            fetch("/predict", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const flagCode = FLAG_CODES[data.language_code];
+                const flagImg = flagCode
+                ? `<img src="https://flagcdn.com/24x18/${flagCode}.png" alt="${data.language_code}" class="flag-icon">`
+                : "";
+                resultDiv.innerHTML = flagImg + " " + data.language_name;
+
+                if (data.is_short) {
+                    warningDiv.textContent = "⚠️ Testo breve: risultato meno affidabile";
+                } else {
+                    warningDiv.textContent = "";
+                }
+            })
+            .catch(error => {
+                resultDiv.textContent = "Errore nella richiesta";
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
